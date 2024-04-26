@@ -80,14 +80,8 @@ public class Main {
         try {
             if (isRoman(str)) {
                 num = romanToDecimal(str);
-                if (num < 1 || num > 10) {
-                    throw new IllegalArgumentException("Number out of range (1-10)");
-                }
             } else {
                 num = Integer.parseInt(str);
-                if (num < 1 || num > 10) {
-                    throw new IllegalArgumentException("Number out of range (1-10)");
-                }
             }
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid number format");
@@ -95,23 +89,54 @@ public class Main {
         return num;
     }
 
-
-
     // Метод для проверки, является ли число римским
     private static boolean isRoman(String str) {
-        // Проверяем, начинается ли строка с одного из символов римских цифр
-        if (!str.matches("[MDCLXVI].*")) {
-            return false;
+        if (!str.matches("[IVXLCDM]*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str);
         }
 
-        // Проверяем, что строка не содержит недопустимых комбинаций символов
-        if (str.matches(".*[MD](?![C])|[MDC](?!M)|[MD]DD|LL|VV|IIII|I[VX]|X[XLC]|C[DM]|D[MV]")) {
-            return false;
+        if (str.matches(".*[^IVXLCDM].*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str);
+        }
+
+        if (str.matches(".*IIII.*|.*VV.*|.*XXXX.*|.*LL.*|.*CCCC.*|.*DD.*|.*MMMM.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str);
+        }
+
+        if (str.matches(".*IL.*|.*IC.*|.*ID.*|.*IM.*|.*VX.*|.*VL.*|.*VC.*|.*VD.*|.*VM.*|.*XD.*|.*XM.*|.*LC.*|.*LD.*|.*LM.*|.*DM.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str);
+        }
+
+        if (str.matches(".*I{4,}.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'I's)");
+        }
+
+        if (str.matches(".*V{2,}.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 1 consecutive 'V's)");
+        }
+
+        if (str.matches(".*X{4,}.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'X's)");
+        }
+
+        if (str.matches(".*L{2,}.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 1 consecutive 'L's)");
+        }
+
+        if (str.matches(".*C{4,}.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'C's)");
+        }
+
+        if (str.matches(".*D{2,}.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 1 consecutive 'D's)");
+        }
+
+        if (str.matches(".*M{4,}.*")) {
+            throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'M's)");
         }
 
         return true;
     }
-
 
     // Метод для преобразования римских чисел в десятичные значения
     private static int romanToDecimal(String roman) {
