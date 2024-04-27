@@ -2,33 +2,37 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class Main {
-    // Метод для выполнения арифметических операций
+class Main {
+    // Метод для выполнения арифметических операций и обработки исключений
     public static String calc(String input) {
         try {
-            // Разбиваем входную строку на три части: число, оператор, число
+            // Разбиение входной строки на три части: число, оператор, число
             String[] parts = input.trim().split("\\s+");
             if (parts.length != 3)
                 throw new IllegalArgumentException("Invalid input format");
 
-            // Извлекаем числа и оператор из массива частей
+            // Извлечение чисел и оператора из массива частей
             String num1Str = parts[0];
             String operator = parts[1];
             String num2Str = parts[2];
 
-            // Определяем, являются ли введенные числа римскими
-            boolean isRomanNum1 = isRoman(num1Str);
-            boolean isRomanNum2 = isRoman(num2Str);
-
-            // Проверяем, являются ли оба числа одного типа (или оба арабские, или оба римские)
-            if (isRomanNum1 != isRomanNum2)
-                throw new IllegalArgumentException("Both numbers should be of the same type");
-
-            // Преобразуем числа в числовые значения
+            // Преобразование строковых чисел в числовые значения
             int num1 = parseNumber(num1Str);
             int num2 = parseNumber(num2Str);
 
-            // Выполняем выбранную арифметическую операцию
+            // Проверка допустимого диапазона чисел
+            if (num1 < 1 || num1 > 10 || num2 < 1 || num2 > 10)
+                throw new IllegalArgumentException("Numbers should be in the range of 1 to 10");
+
+            // Проверка, являются ли числа римскими или арабскими
+            boolean isRomanNum1 = isRoman(num1Str);
+            boolean isRomanNum2 = isRoman(num2Str);
+
+            // Проверка, что оба числа одного типа (либо римские, либо арабские)
+            if (isRomanNum1 != isRomanNum2)
+                throw new IllegalArgumentException("Numbers should be of the same type (either Roman or Arabic)");
+
+            // Выполнение выбранной арифметической операции
             int result;
             switch (operator) {
                 case "+":
@@ -41,28 +45,20 @@ public class Main {
                     result = num1 * num2;
                     break;
                 case "/":
-                    // Проверка на деление на ноль
-                    if (num2 == 0) {
+                    if (num2 == 0)
                         throw new ArithmeticException("Division by zero");
-                    }
                     result = num1 / num2;
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operator");
             }
 
-            // Возвращение результата операции в зависимости от типа чисел
+            // Возврат результата в зависимости от типа чисел (римские или арабские)
             if (isRomanNum1) {
-                // Проверка на допустимый диапазон римских чисел (1-3999)
-                if (result < 1 || result > 3999)
-                    throw new IllegalArgumentException("Result out of range (1-3999)");
-                // Преобразуем десятичное число в римское и возвращаем результат
+                if (result <= 0)
+                    throw new IllegalArgumentException("Result cannot be zero or negative in Roman numerals");
                 return decimalToRoman(result);
             } else {
-                // Проверка на допустимый диапазон арабских чисел (1-10)
-                if (result < 1 || result > 10)
-                    throw new IllegalArgumentException("Result out of range (1-10)");
-                // Преобразуем результат в строку и возвращаем его
                 return String.valueOf(result);
             }
         } catch (NumberFormatException e) {
@@ -74,73 +70,29 @@ public class Main {
         }
     }
 
-    // Метод для определения типа числа (арабское или римское)
+    // Метод для преобразования строки в число с проверкой на допустимые значения
     private static int parseNumber(String str) {
-        int num;
         try {
-            if (isRoman(str)) {
-                num = romanToDecimal(str);
-            } else {
-                num = Integer.parseInt(str);
-            }
+            int num = Integer.parseInt(str);
+            if (num < 0 || num > 10)
+                throw new IllegalArgumentException("Numbers should be in the range of 0 to 10");
+            return num;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid number format");
+            // Если не удалось преобразовать в число, проверяем, является ли строка римским числом
+            if (!isRoman(str))
+                throw new IllegalArgumentException("Invalid number format");
+            // Если строка - римское число, преобразуем его в десятичное значение
+            int decimalValue = romanToDecimal(str);
+            // Проверяем, что римское число соответствует правилам
+            if (!isValidRoman(str))
+                throw new IllegalArgumentException("Invalid number format: " + str);
+            return decimalValue;
         }
-        return num;
     }
 
-    // Метод для проверки, является ли число римским
+    // Метод для проверки, является ли строка римским числом
     private static boolean isRoman(String str) {
-        if (str.matches("[IVXLCDM]*")) {
-            // Проверка на допустимые комбинации римских чисел
-            if (str.matches(".*IIII.*|.*VV.*|.*XXXX.*|.*LL.*|.*CCCC.*|.*DD.*|.*MMMM.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str);
-            }
-
-            if (str.matches(".*IL.*|.*IC.*|.*ID.*|.*IM.*|.*VX.*|.*VL.*|.*VC.*|.*VD.*|.*VM.*|.*XD.*|.*XM.*|.*LC.*|.*LD.*|.*LM.*|.*DM.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str);
-            }
-
-            if (str.matches(".*I{4,}.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'I's)");
-            }
-
-            if (str.matches(".*V{2,}.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 1 consecutive 'V's)");
-            }
-
-            if (str.matches(".*X{4,}.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'X's)");
-            }
-
-            if (str.matches(".*L{2,}.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 1 consecutive 'L's)");
-            }
-
-            if (str.matches(".*C{4,}.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'C's)");
-            }
-
-            if (str.matches(".*D{2,}.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 1 consecutive 'D's)");
-            }
-
-            if (str.matches(".*M{4,}.*")) {
-                throw new IllegalArgumentException("Invalid Roman numeral: " + str + " (more than 3 consecutive 'M's)");
-            }
-
-            return true;
-        } else {
-            try {
-                // Если это не римское число, попытаемся преобразовать его в число
-                Integer.parseInt(str);
-                // Если успешно, вернем false (не римское число)
-                return false;
-            } catch (NumberFormatException e) {
-                // Если не удалось преобразовать в число, значит, это недопустимый ввод
-                throw new IllegalArgumentException("Invalid input: " + str);
-            }
-        }
+        return str.matches("^[IVXLCDM]+$");
     }
 
     // Метод для преобразования римских чисел в десятичные значения
@@ -187,7 +139,12 @@ public class Main {
         return result.toString();
     }
 
-    // Метод для чтения ввода и вывода результатов
+    // Метод для проверки допустимости римских чисел
+    private static boolean isValidRoman(String str) {
+        return str.matches("^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$");
+    }
+
+    // Главный метод программы для чтения ввода и вывода результатов
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Input:");
